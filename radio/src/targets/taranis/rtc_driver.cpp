@@ -77,6 +77,9 @@ void rtcInit()
 
   RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR, ENABLE);
   PWR_BackupAccessCmd(ENABLE);
+
+  TRACE_RTC_EVENT(1, rtc_init_bdrc, RCC->BDCR);
+
   RCC_LSEConfig(RCC_LSE_ON);
   while(RCC_GetFlagStatus(RCC_FLAG_LSERDY) == RESET);
   RCC_RTCCLKConfig(RCC_RTCCLKSource_LSE);
@@ -89,6 +92,8 @@ void rtcInit()
   RTC_InitStruct.RTC_SynchPrediv = 255;
   RTC_Init(&RTC_InitStruct);
   
+  TRACE_RTC_EVENT(1, rtc_init_bdrc, RCC->BDCR);
+
   struct gtm utm;
   rtc_gettime(&utm);
   g_rtcTime = gmktime(&utm);

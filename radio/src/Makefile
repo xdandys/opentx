@@ -326,9 +326,11 @@ USE_BIN_ALLOCATOR = NO
 #   TRACE_SD_CARD     SD card operations (read, write, etc)
 #   TRACE_FATFS       FatFs file operations
 #   TRACE_AUDIO       Audio processing (not yet implemented)
+#		TRACE_RTC					RTC debugging
 TRACE_SD_CARD = NO
 TRACE_FATFS = NO
 TRACE_AUDIO = NO
+TRACE_RTC = NO
 
 # Enable double buffering for LCD. Only for TARANIS PLUS and 9XE targets.
 # Activating requires about 6kB of RAM, but it enables menus task to
@@ -867,6 +869,11 @@ ifeq ($(PCB), TARANIS)
     DEBUG = YES
     DEBUG_TRACE_BUFFER = YES
     CPPDEFS += -DTRACE_AUDIO
+  endif
+  ifeq ($(TRACE_RTC), YES)
+    DEBUG = YES
+    DEBUG_TRACE_BUFFER = YES
+    CPPDEFS += -DTRACE_RTC
   endif
   ifeq ($(DEBUG_TRACE_BUFFER), YES)
     CPPDEFS += -DDEBUG_TRACE_BUFFER

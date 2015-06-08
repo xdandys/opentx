@@ -131,6 +131,9 @@ enum TraceEvent {
   ff_f_write_move_window,
 
   audio_getNextFilledBuffer_skip = 50,
+
+  rtc_init_bdrc = 60,
+
 };
 
 struct TraceElement {
@@ -171,6 +174,13 @@ void dumpTraceBuffer();
 #else
   #define TRACE_AUDIO_EVENT(condition, event, data)  
   #define TRACEI_AUDIO_EVENT(condition, event, data)  
+#endif
+#if defined(TRACE_RTC)
+  #define TRACE_RTC_EVENT(condition, event, data)  TRACE_EVENT(condition, event, data)
+  #define TRACEI_RTC_EVENT(condition, event, data) TRACEI_EVENT(condition, event, data)
+#else
+  #define TRACE_RTC_EVENT(condition, event, data)  
+  #define TRACEI_RTC_EVENT(condition, event, data)  
 #endif
 
 

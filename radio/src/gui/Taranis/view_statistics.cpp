@@ -177,10 +177,7 @@ void menuTraceBuffer(uint8_t event)
   }
 
   SIMPLE_SUBMENU("Trace Buffer " VERS_STR, TRACE_BUFFER_LEN);
-  /* RTC time */
-  struct gtm t;
-  gettime(&t);
-  putsTime(LCD_W+1, 0, t, TIMEBLINK);
+  putsRtcTime(LCD_W+1, 0, LEFT|TIMEBLINK);
 
   uint8_t y = 0;
   uint8_t k = 0;
