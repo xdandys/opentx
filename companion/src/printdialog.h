@@ -5,6 +5,7 @@
 #include <QtGui>
 #include <QDir>
 #include "eeprominterface.h"
+#include "modelprinter.h"
 
 namespace Ui {
   class PrintDialog;
@@ -49,6 +50,8 @@ private:
     QString curvefile5;
     QString curvefile9;
     QDir *qd;
+
+    ModelPrinter modelPrinter;
     
 private slots:
     void on_printButton_clicked();

@@ -360,7 +360,7 @@ class RawSource {
       return index >= 0 ? (type * 65536 + index) : -(type * 65536 - index);
     }
 
-    QString toString(const ModelData & model);
+    QString toString(const ModelData & model) const;
 
     RawSourceRange getRange(const ModelData & model, const GeneralSettings & settings, unsigned int flags=0) const;
 
@@ -420,7 +420,7 @@ class RawSwitch {
       return index >= 0 ? (type * 256 + index) : -(type * 256 - index);
     }
 
-    QString toString();
+    QString toString() const;
 
     bool operator== ( const RawSwitch& other) {
       return (this->type == other.type) && (this->index == other.index);
@@ -571,7 +571,7 @@ class CurveReference {
     CurveRefType type;
     int value;
 
-    QString toString();
+    QString toString() const;
 };
 
 enum InputMode {

@@ -339,7 +339,7 @@ QString RotaryEncoderString(int index)
   return CHECK_IN_ARRAY(rotary, index);
 }
 
-QString RawSource::toString(const ModelData & model)
+QString RawSource::toString(const ModelData & model) const
 {
   static const QString trims[] = {
     QObject::tr("TrmR"), QObject::tr("TrmE"), QObject::tr("TrmT"), QObject::tr("TrmA")
@@ -420,7 +420,7 @@ QString SwitchDn(const char sw)
   return QString::fromUtf8(result);
 }
 
-QString RawSwitch::toString()
+QString RawSwitch::toString() const
 {
   static const QString switches9X[] = {
     QString("THR"), QString("RUD"), QString("ELE"),
@@ -508,7 +508,7 @@ QString RawSwitch::toString()
   }
 }
 
-QString CurveReference::toString()
+QString CurveReference::toString() const
 {
   if (value == 0) {
     return "----";

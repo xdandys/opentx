@@ -159,6 +159,7 @@ set(companion_SRCS
   customizesplashdialog.cpp
   burndialog.cpp
   printdialog.cpp
+  modelprinter.cpp
   fusesdialog.cpp
   logsdialog.cpp
   downloaddialog.cpp

@@ -2,6 +2,7 @@
 #include "ui_printdialog.h"
 #include "helpers.h"
 #include "eeprominterface.h"
+#include "modelprinter.h"
 #include <QtGui>
 #include <QImage>
 #include <QColor>
@@ -21,7 +22,8 @@ PrintDialog::PrintDialog(QWidget *parent, FirmwareInterface * firmware, GeneralS
   g_model(gm),
   printfilename(filename),
   ui(new Ui::PrintDialog),
-  gvars(firmware->getCapability(Gvars))
+  gvars(firmware->getCapability(Gvars)),
+  modelPrinter(firmware, gg, gm)
 {
   ui->setupUi(this);
   this->setWindowIcon(CompanionIcon("print.png"));
@@ -216,161 +218,55 @@ QString PrintDialog::printFlightModes()
 void PrintDialog::printInputs()
 {
     QString str = "<table border=1 cellspacing=0 cellpadding=3 width=\"100%\"><tr><td><h2>";
-    str.append(tr("Inputs"));
-    str.append("</h2></td></tr><tr><td><table border=0 cellspacing=0 cellpadding=3>");
+    str += tr("Inputs");
+    str += "</h2></td></tr><tr><td><table border=0 cellspacing=0 cellpadding=3>";
     int ec=0;
     unsigned int lastCHN = 255;
     for(int i=0; i<C9X_MAX_EXPOS; i++) {
       ExpoData *ed=&g_model->expoData[i];
-      if(ed->mode==0)
-        continue;
+      if(ed->mode==0) continue;
       ec++;
-      str.append("<tr><td><font size=+1 face='Courier New'>");
+
+      str += "<tr><td>";
       if(lastCHN!=ed->chn) {
         lastCHN=ed->chn;
-        str.append("<b>"+getInputStr(*g_model, ed->chn)+"</b>");
+        str += addFont("<b>"+modelPrinter.printInputName(ed->chn)+"</b>", "", "+1", "Courier New");
       }
-      str.append("</font></td>");
-      str.append("<td><font size=+1 face='Courier New' color=green>");
-
-      switch(ed->mode) {
-        case (1): 
-          str += "&lt;-";
-          break;
-        case (2): 
-          str += "-&gt;";
-          break;
-        default:
-          str += "&nbsp;&nbsp;";
-          break;
-      };
-
-      str += "&nbsp;" + tr("Weight") + QString("(%1)").arg(getGVarString(ed->weight,true));
-  
-      if (firmware->getCapability(VirtualInputs)) {
-        str += " " + tr("Source") + QString("(%1)").arg(ed->srcRaw.toString(*g_model));
-        if (ed->carryTrim>0) str += " " + tr("NoTrim");
-        else if (ed->carryTrim<0) str += " " + RawSource(SOURCE_TYPE_TRIM, (-(ed->carryTrim)-1)).toString(*g_model);
-      }
-      if (ed->curve.value) str += " " + Qt::escape(ed->curve.toString());
-
-      if (firmware->getCapability(FlightModes)) {
-        if(ed->phases) {
-          if (ed->phases!=(unsigned int)(1<<firmware->getCapability(FlightModes))-1) {
-            unsigned int mask=1;
-            bool first = true;
-            bool multiple = false;
-            QString strModes;
-            for (int j=0; j<firmware->getCapability(FlightModes);j++) {
-              if (!(ed->phases & mask)) {
-                //FlightModeData *pd = &g_model->flightModeData[j];
-                const char * pdName = g_model->flightModeData[j].name;
-                if (first) {
-                  strModes += Qt::escape(QString("%1").arg(getPhaseName(j+1,pdName)));
-                  first = false;
-                } else {
-                  strModes += Qt::escape(QString(", %1").arg(getPhaseName(j+1, pdName)));
-                  multiple = true;
-                }
-              }
-              mask <<= 1;
-            }
-            if (!strModes.isEmpty()) {
-              str += " " + tr(multiple?"Flight modes":"Flight mode") + "(" + strModes + ")";
-            }
-          } else {
-            str += tr("DISABLED")+QString(" !!!");
-          }
-        }
-      } 
-      if (ed->swtch.type) str += " " + tr("Switch") + QString("(%1)").arg(ed->swtch.toString());
-      if (firmware->getCapability(HasExpoNames) && ed->name[0]) str += Qt::escape(QString(" [%1]").arg(ed->name));
-      str += "</font></td></tr>";
+      str += "</td>";
+      
+      str += "<td>" + addFont(modelPrinter.printInputLine(ed), "green", "+1", "Courier New") + "</td>";
+      str += "</tr>";
     }
     str += "</table></td></tr></table><br>";
-    if (ec>0)
-      te->append(str);
+    if (ec>0) te->append(str);
+    // debugHtml(str);
 }
 
 
 void PrintDialog::printMixes()
 {
     QString str = "<table border=1 cellspacing=0 cellpadding=3 style=\"page-break-after:always;\" width=\"100%\"><tr><td><h2>";
-    str.append(tr("Mixers"));
-    str.append("</h2></td></tr><tr><td><table border=0 cellspacing=0 cellpadding=3>");
+    str += tr("Mixers");
+    str += "</h2></td></tr><tr><td><table border=0 cellspacing=0 cellpadding=3>";
 
     unsigned int lastCHN = 255;
     for(int i=0; i<firmware->getCapability(Mixes); i++) {
       MixData *md = &g_model->mixData[i];
       if(!md->destCh || md->destCh>(unsigned int)firmware->getCapability(Outputs) ) break;
-      str.append("<tr><td><font size=+1 face='Courier New'><b>");
+
+      str += "<tr><td><b>";
       if(lastCHN!=md->destCh) {
         lastCHN=md->destCh;
-
-        QString chname = QObject::tr("CH%1").arg(lastCHN);
-        // TODO not nice, Qt brings a function for that, I don't remember right now
-        (chname.length() < 4) ? chname.append("  ") : chname.append(" ");
-        if (firmware->getCapability(HasChNames)) {
-          QString name = g_model->limitData[lastCHN-1].name;
-          if (!name.isEmpty()) {
-            name = QString("(") + name + QString(")");
-          }
-          name.append("        ");
-          chname += name.left(8);
-        }
-        chname = Qt::escape(chname);
-        str.append(chname.replace(" ", "&nbsp;")); 
+        str += addFont(modelPrinter.printMixerName(md->destCh).replace(" ", "&nbsp;"), "", "+1", "Courier New"); 
       } 
-      else {
-        str.append("&nbsp;");
-      }
-      str.append("</b></font></td>");
-      str.append("<td><font size=+1 face='Courier New' color=green>");
-      switch(md->mltpx) {
-        case (1): str += "&nbsp;*"; break;
-        case (2): str += "&nbsp;R"; break;
-        default:  str += "&nbsp;&nbsp;"; break;
-      };
+      str += "</b></td>";
 
-      str += " " + md->srcRaw.toString(*g_model);
-      str += " " + Qt::escape(tr("Weight(%1)").arg(getGVarString(md->weight, true)));
-
-      QString phasesStr = getPhasesStr(md->phases, *g_model);
-      if (!phasesStr.isEmpty()) str += " " + Qt::escape(phasesStr);
-
-      if (md->swtch.type != SWITCH_TYPE_NONE) {
-        str += " " + Qt::escape(tr("Switch(%1)").arg(md->swtch.toString()));
-      }
-
-      if (md->carryTrim>0)
-        str += " " + Qt::escape(tr("NoTrim"));
-      else if (md->carryTrim<0)
-        str += " " + RawSource(SOURCE_TYPE_TRIM, (-(md->carryTrim)-1)).toString(*g_model);
-
-      if (firmware->getCapability(HasNoExpo) && md->noExpo) str += " " + Qt::escape(tr("No DR/Expo"));
-      if (md->sOffset)     str += " " + Qt::escape(tr("Offset(%1)").arg(getGVarString(md->sOffset)));
-      if (md->curve.value) str += " " + Qt::escape(md->curve.toString());
-  
-      int scale = firmware->getCapability(SlowScale);
-      if (scale == 0)
-        scale = 1;
-      if (md->delayDown || md->delayUp)
-        str += Qt::escape(tr(" Delay(u%1:d%2)").arg((double)md->delayUp/scale).arg((double)md->delayDown/scale));
-      if (md->speedDown || md->speedUp)
-        str += Qt::escape(tr(" Slow(u%1:d%2)").arg((double)md->speedUp/scale).arg((double)md->speedDown/scale));
-      if (md->mixWarn)
-        str += Qt::escape(tr(" Warn(%1)").arg(md->mixWarn));
-      if (firmware->getCapability(HasMixerNames)) {
-        QString MixerName;
-        MixerName.append(md->name);
-        if (!MixerName.isEmpty()) {
-          str += " " + Qt::escape(QString("(%1)").arg(MixerName));
-        }
-      }
-      str.append("</font></td></tr>");
+      str += "<td>" + addFont(modelPrinter.printMixerLine(md), "green", "+1", "Courier New") + "</td>";
+      str += "</tr>";
     }
-    str.append("</table></td></tr></table><br>");
+    str += "</table></td></tr></table><br>";
     te->append(str);
+    // debugHtml(str);
 }
 
 void PrintDialog::printLimits()

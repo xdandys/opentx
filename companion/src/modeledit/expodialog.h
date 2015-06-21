@@ -3,6 +3,7 @@
 
 #include <QDialog>
 #include "eeprominterface.h"
+#include "modelprinter.h"
 
 class GVarGroup;
 class CurveGroup;
@@ -34,6 +35,7 @@ class ExpoDialog : public QDialog {
     GVarGroup * gvWeightGroup;
     GVarGroup * gvOffsetGroup;
     CurveGroup * curveGroup;
+    ModelPrinter modelPrinter;
 };
 
 #endif // EXPODIALOG_H
