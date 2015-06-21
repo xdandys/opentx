@@ -664,29 +664,17 @@ void CustomFunctionsPanel::populateFuncParamCB(QComboBox *b, const ModelData & m
   QStringList qs;
   b->clear();
   if (function==FuncPlaySound) {
-    qs <<"Beep 1" << "Beep 2" << "Beep 3" << "Warn1" << "Warn2" << "Cheep" << "Ratata" << "Tick" << "Siren" << "Ring" ;
-    qs << "SciFi" << "Robot" << "Chirp" << "Tada" << "Crickt"  << "AlmClk"  ;
+    FuncSwData::populatePlaySoundParams(qs);
     b->addItems(qs);
     b->setCurrentIndex(value);
   }
   else if (function==FuncPlayHaptic) {
-    qs << "0" << "1" << "2" << "3";
+    FuncSwData::populateHapticParams(qs);
     b->addItems(qs);
     b->setCurrentIndex(value);
   }
   else if (function==FuncReset) {
-    qs.append( QObject::tr("Timer1"));
-    qs.append( QObject::tr("Timer2"));
-    qs.append( QObject::tr("All"));
-    qs.append( QObject::tr("Telemetry"));
-    int reCount = firmware->getCapability(RotaryEncoders);
-    if (reCount == 1) {
-      qs.append( QObject::tr("Rotary Encoder"));
-    }
-    else if (reCount == 2) {
-      qs.append( QObject::tr("REa"));
-      qs.append( QObject::tr("REb"));
-    }
+    FuncSwData::populateResetParams(qs);
     b->addItems(qs);
     b->setCurrentIndex(value);
   }

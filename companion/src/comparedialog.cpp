@@ -632,7 +632,6 @@ void CompareDialog::printMixers()
   QString str = "<table border=1 cellspacing=0 cellpadding=3 style=\"page-break-after:always;\" width=\"100%\"><tr><td><h2>";
   str += tr("Mixers");
   str += "</h2></td></tr><tr><td><table border=1 cellspacing=0 cellpadding=3>";
-  float scale=GetCurrentFirmware()->getCapability(SlowScale);
   for(uint8_t i=1; i<=GetCurrentFirmware()->getCapability(Outputs); i++) {
     if (ChannelHasMix(g_model1.mixData, i) || ChannelHasMix(g_model2.mixData, i)) {
 
@@ -835,108 +834,48 @@ void CompareDialog::printCurves()
 
 void CompareDialog::printSwitches()
 {
-    int sc=0;
-    QString color;
-    QString str = "<table border=1 cellspacing=0 cellpadding=3 width=\"100%\">";
-    str.append("<tr><td><h2>"+tr("Logical Switches")+"</h2></td></tr>");
-    str.append("<tr><td><table border=1 cellspacing=0 cellpadding=1 width=\"100%\">");
-    for (int i=0; i<GetCurrentFirmware()->getCapability(LogicalSwitches); i++) {
-      GeneralSettings settings;
-      QString sw1 = g_model1.customSw[i].toString(g_model1, settings);
-      QString sw2 = g_model2.customSw[i].toString(g_model2, settings);
-      if (!(sw1.isEmpty() && sw2.isEmpty())) {
-        str.append("<tr>");
-        color=getColor1(sw1,sw2);
-        str.append(QString("<td  width=\"45%\"><font color=%1>").arg(color)+sw1+"</font></td>");
-        str.append("<td align=\"center\" width=\"10%\"><b>"+tr("L%1").arg(i+1)+QString("</b></td>"));
-        color=getColor2(sw1,sw2);
-        str.append(QString("<td  width=\"45%\"><font color=%1>").arg(color)+sw2+"</font></td>");
-        str.append("</tr>");
-        sc++;
-      }
+  bool haveOutput = false;
+  QString str = "<table border=1 cellspacing=0 cellpadding=3 width=\"100%\">";
+  str += "<tr><td><h2>" + tr("Logical Switches") + "</h2></td></tr>";
+  str += "<tr><td><table border=1 cellspacing=0 cellpadding=1 width=\"100%\">";
+  for (int i=0; i<GetCurrentFirmware()->getCapability(LogicalSwitches); i++) {
+    QString l1 = modelPrinter1.printLogicalSwitchLine(i);
+    QString l2 = modelPrinter2.printLogicalSwitchLine(i);
+    if (!(l1.isEmpty() && l2.isEmpty())) {
+      applyDiffFont(l1, l2);
+      str += "<tr>";
+      str += "<td  width=\"45%\">"+ l1 + "</td>";
+      str += "<td align=\"center\" width=\"10%\"><b>" + tr("L") + QString("%1</b></td>").arg(i+1);
+      str += "<td  width=\"45%\">" + l2 + "</td>";
+      str += "</tr>";
+      haveOutput = true;
     }
-    str.append("</table></td></tr></table>");
-    if (sc>0)
-        te->append(str);
+  }
+  str += "</table></td></tr></table>";
+  if (haveOutput) te->append(str);
 }
 
 void CompareDialog::printFSwitches()
 {
-  QString color1;
-  QString color2;
-  int sc=0;
-  QString str = "<table border=1 cellspacing=0 cellpadding=3 style=\"page-break-before:always;\" width=\"100%\">";
-  str.append("<tr><td><h2>"+tr("Special Functions")+"</h2></td></tr>");
-  str.append("<tr><td><table border=1 cellspacing=0 cellpadding=1 width=\"100%\"><tr>");
-  str.append("<td width=\"7%\" align=\"center\"><b>"+tr("Switch")+"</b></td>");
-  str.append("<td width=\"12%\" align=\"center\"><b>"+tr("Function")+"</b></td>");
-  str.append("<td width=\"12%\" align=\"center\"><b>"+tr("Param")+"</b></td>");
-  str.append("<td width=\"7%\" align=\"center\"><b>"+tr("Repeat")+"</b></td>");
-  str.append("<td width=\"7%\" align=\"center\"><b>"+tr("Enable")+"</b></td>");
-  str.append("<td width=\"10%\">&nbsp;</td>");
-  str.append("<td width=\"7%\" align=\"center\"><b>"+tr("Switch")+"</b></td>");
-  str.append("<td width=\"12%\" align=\"center\"><b>"+tr("Function")+"</b></td>");
-  str.append("<td width=\"12%\" align=\"center\"><b>"+tr("Param")+"</b></td>");
-  str.append("<td width=\"7%\" align=\"center\"><b>"+tr("Repeat")+"</b></td>");
-  str.append("<td width=\"7%\" align=\"center\"><b>"+tr("Enable")+"</b></td>");
-  str.append("</tr>");
-  for(int i=0; i<GetCurrentFirmware()->getCapability(CustomFunctions); i++)
-  {
-    if (g_model1.funcSw[i].swtch.type || g_model2.funcSw[i].swtch.type) {
-      if ((g_model1.funcSw[i].swtch != g_model2.funcSw[i].swtch) || (g_model1.funcSw[i].func!=g_model2.funcSw[i].func) || (g_model1.funcSw[i].adjustMode!=g_model2.funcSw[i].adjustMode) || (g_model1.funcSw[i].param!=g_model2.funcSw[i].param) || (g_model1.funcSw[i].enabled != g_model2.funcSw[i].enabled) || (g_model1.funcSw[i].repeatParam != g_model2.funcSw[i].repeatParam)) {
-        color1="green";
-        color2="red";
-      } else {
-        color1="grey";
-        color2="grey";
-      }
-      str.append("<tr>");
-      if (g_model1.funcSw[i].swtch.type) {
-        str.append(doTC(g_model1.funcSw[i].swtch.toString(),color1));
-        str.append(doTC(g_model1.funcSw[i].funcToString(),color1));
-        str.append(doTC(g_model1.funcSw[i].paramToString(),color1));
-        int index=g_model1.funcSw[i].func;
-        if (index==FuncPlaySound || index==FuncPlayHaptic || index==FuncPlayValue || index==FuncPlayPrompt || index==FuncPlayBoth || index==FuncBackgroundMusic) {
-          str.append(doTC(QString("%1").arg(g_model1.funcSw[i].repeatParam),color1));
-        } else {
-          str.append(doTC( "---",color1));
-        }
-        if ((index<=FuncInstantTrim) || (index>FuncBackgroundMusicPause)) {
-          str.append(doTC((g_model1.funcSw[i].enabled ? "ON" : "OFF"),color1));
-        } else {
-          str.append(doTC( "---",color1));
-        }
-      } else {
-        str.append("<td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>");
-      }
-      str.append(doTC(tr("SF")+QString("%1").arg(i+1),"",true));
-      if (g_model2.funcSw[i].swtch.type) {
-        str.append(doTC(g_model2.funcSw[i].swtch.toString(),color2));
-        str.append(doTC(g_model2.funcSw[i].funcToString(),color2));
-        str.append(doTC(g_model2.funcSw[i].paramToString(),color2));
-        int index=g_model2.funcSw[i].func;
-        if (index==FuncPlaySound || index==FuncPlayHaptic || index==FuncPlayValue || index==FuncPlayPrompt || index==FuncPlayBoth || index==FuncBackgroundMusic) {
-          str.append(doTC(QString("%1").arg(g_model2.funcSw[i].repeatParam),color2));
-        } else {
-          str.append(doTC( "---",color2));
-        }
-        if ((index<=FuncInstantTrim) || (index>FuncBackgroundMusicPause)) {
-          str.append(doTC((g_model2.funcSw[i].enabled ? "ON" : "OFF"),color2));
-        } else {
-          str.append(doTC( "---",color2));
-        }
-      }
-      else {
-        str.append("<td>&nbsp;</td><td>&nbsp;</td>");
-      }
-      str.append("</tr>");
-      sc++;
+  bool haveOutput = false;
+  QString str = "<table border=1 cellspacing=0 cellpadding=3 width=\"100%\">";
+  str += "<tr><td><h2>" + tr("Special Functions") + "</h2></td></tr>";
+  str += "<tr><td><table border=1 cellspacing=0 cellpadding=1 width=\"100%\">";
+  for (int i=0; i<GetCurrentFirmware()->getCapability(CustomFunctions); i++) {
+    QString l1 = modelPrinter1.printCustomFunctionLine(i);
+    QString l2 = modelPrinter2.printCustomFunctionLine(i);
+    if (!(l1.isEmpty() && l2.isEmpty())) {
+      applyDiffFont(l1, l2);
+      str += "<tr>";
+      str += "<td  width=\"45%\">"+ l1 + "</td>";
+      str += "<td align=\"center\" width=\"10%\"><b>" + tr("SF") + QString("%1</b></td>").arg(i+1);
+      str += "<td  width=\"45%\">" + l2 + "</td>";
+      str += "</tr>";
+      haveOutput = true;
     }
-}
-  str.append("</table></td></tr></table>");
-  str.append("<br>");
-  if (sc!=0)
-      te->append(str);
+  }
+  str += "</table></td></tr></table>";
+  if (haveOutput) te->append(str);
 }
 
 void CompareDialog::printFrSky()

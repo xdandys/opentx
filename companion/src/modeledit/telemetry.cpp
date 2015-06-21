@@ -336,10 +336,10 @@ void TelemetryCustomScreen::populateTelemetrySourceCB(QComboBox *b, unsigned int
 {
   b->clear();
 
-  b->addItem(RawSource(SOURCE_TYPE_NONE, 0).toString(model));
+  b->addItem(RawSource(SOURCE_TYPE_NONE, 0).toString(&model));
 
   for (unsigned int i = 0; i < (last ? TELEMETRY_SOURCES_STATUS_COUNT : TELEMETRY_SOURCES_DISPLAY_COUNT); i++) {
-    b->addItem(RawSource(SOURCE_TYPE_TELEMETRY, i).toString(model));
+    b->addItem(RawSource(SOURCE_TYPE_TELEMETRY, i).toString(&model));
     if (!firmware->isTelemetrySourceAvailable(i)) {
       // disable item
       QModelIndex index = b->model()->index(i+1, 0);

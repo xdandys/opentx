@@ -21,12 +21,15 @@ public:
   QString printInputLine(const ExpoData * ed);
   QString printMixerName(int curDest);
   QString printMixerLine(const MixData * md, int highlightedSource = 0);
-  QString getPhasesStr(unsigned int phases);
+  QString printLogicalSwitchLine(int idx);
+  QString printCustomFunctionLine(int idx);
 
 private:
   FirmwareInterface * firmware;
   GeneralSettings * g_eeGeneral;
   ModelData * g_model;
+
+  QString getPhasesStr(unsigned int phases);
 };
 
 #endif //#ifndef MODELPRINTER_H

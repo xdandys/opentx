@@ -546,7 +546,7 @@ void populateSourceCB(QComboBox *b, const RawSource & source, const ModelData & 
 
   if (flags & POPULATE_SOURCES) {
     item = RawSource(SOURCE_TYPE_NONE);
-    b->addItem(item.toString(model), item.toValue());
+    b->addItem(item.toString(&model), item.toValue());
     if (item == source) b->setCurrentIndex(b->count()-1);
   }
 
@@ -554,7 +554,7 @@ void populateSourceCB(QComboBox *b, const RawSource & source, const ModelData & 
     for (int i=0; i<GetCurrentFirmware()->getCapability(LuaScripts); i++) {
       for (int j=0; j<GetCurrentFirmware()->getCapability(LuaOutputsPerScript); j++) {
         item = RawSource(SOURCE_TYPE_LUA_OUTPUT, i*16+j);
-        b->addItem(item.toString(model), item.toValue());
+        b->addItem(item.toString(&model), item.toValue());
         if (item == source) b->setCurrentIndex(b->count()-1);
       }
     }
@@ -566,7 +566,7 @@ void populateSourceCB(QComboBox *b, const RawSource & source, const ModelData & 
     for (int i=0; i<virtualInputs; i++) {
       if (model.isInputValid(i)) {
         item = RawSource(SOURCE_TYPE_VIRTUAL_INPUT, i);
-        b->addItem(item.toString(model), item.toValue());
+        b->addItem(item.toString(&model), item.toValue());
         if (item == source) b->setCurrentIndex(b->count()-1);
       }
     }
@@ -575,12 +575,12 @@ void populateSourceCB(QComboBox *b, const RawSource & source, const ModelData & 
   if (flags & POPULATE_SOURCES) {
     for (int i=0; i<4+GetCurrentFirmware()->getCapability(Pots); i++) {
       item = RawSource(SOURCE_TYPE_STICK, i);
-      b->addItem(item.toString(model), item.toValue());
+      b->addItem(item.toString(), item.toValue());
       if (item == source) b->setCurrentIndex(b->count()-1);
     }
     for (int i=0; i<GetCurrentFirmware()->getCapability(RotaryEncoders); i++) {
       item = RawSource(SOURCE_TYPE_ROTARY_ENCODER, i);
-      b->addItem(item.toString(model), item.toValue());
+      b->addItem(item.toString(), item.toValue());
       if (item == source) b->setCurrentIndex(b->count()-1);
     }
   }
@@ -588,27 +588,27 @@ void populateSourceCB(QComboBox *b, const RawSource & source, const ModelData & 
   if (flags & POPULATE_TRIMS) {
     for (int i=0; i<4; i++) {
       item = RawSource(SOURCE_TYPE_TRIM, i);
-      b->addItem(item.toString(model), item.toValue());
+      b->addItem(item.toString(), item.toValue());
       if (item == source) b->setCurrentIndex(b->count()-1);
     }
   }
 
   if (flags & POPULATE_SOURCES) {
     item = RawSource(SOURCE_TYPE_MAX);
-    b->addItem(item.toString(model), item.toValue());
+    b->addItem(item.toString(), item.toValue());
     if (item == source) b->setCurrentIndex(b->count()-1);
   }
   
   if (flags & POPULATE_SWITCHES) {
     for (int i=0; i<GetCurrentFirmware()->getCapability(Switches); i++) {
       item = RawSource(SOURCE_TYPE_SWITCH, i);
-      b->addItem(item.toString(model), item.toValue());
+      b->addItem(item.toString(), item.toValue());
       if (item == source) b->setCurrentIndex(b->count()-1);
     }
 
     for (int i=0; i<GetCurrentFirmware()->getCapability(LogicalSwitches); i++) {
       item = RawSource(SOURCE_TYPE_CUSTOM_SWITCH, i);
-      b->addItem(item.toString(model), item.toValue());
+      b->addItem(item.toString(), item.toValue());
       if (item == source) b->setCurrentIndex(b->count()-1);
     }
   }
@@ -616,19 +616,19 @@ void populateSourceCB(QComboBox *b, const RawSource & source, const ModelData & 
   if (flags & POPULATE_SOURCES) {
     for (int i=0; i<NUM_CYC; i++) {
       item = RawSource(SOURCE_TYPE_CYC, i);
-      b->addItem(item.toString(model), item.toValue());
+      b->addItem(item.toString(), item.toValue());
       if (item == source) b->setCurrentIndex(b->count()-1);
     }
 
     for (int i=0; i<GetCurrentFirmware()->getCapability(TrainerInputs); i++) {
       item = RawSource(SOURCE_TYPE_PPM, i);
-      b->addItem(item.toString(model), item.toValue());
+      b->addItem(item.toString(), item.toValue());
       if (item == source) b->setCurrentIndex(b->count()-1);
     }
 
     for (int i=0; i<GetCurrentFirmware()->getCapability(Outputs); i++) {
       item = RawSource(SOURCE_TYPE_CH, i);
-      b->addItem(item.toString(model), item.toValue());
+      b->addItem(item.toString(), item.toValue());
       if (item == source) b->setCurrentIndex(b->count()-1);
     }
   }
@@ -638,7 +638,7 @@ void populateSourceCB(QComboBox *b, const RawSource & source, const ModelData & 
       if (i==TELEMETRY_SOURCE_RSSI_TX && IS_TARANIS(GetCurrentFirmware()->getBoard()))
         continue;
       item = RawSource(SOURCE_TYPE_TELEMETRY, i);
-      b->addItem(item.toString(model), item.toValue());
+      b->addItem(item.toString(), item.toValue());
       if (item == source) b->setCurrentIndex(b->count()-1);
     }
   }
@@ -647,7 +647,7 @@ void populateSourceCB(QComboBox *b, const RawSource & source, const ModelData & 
       if (i==TELEMETRY_SOURCE_RSSI_TX && IS_TARANIS(GetCurrentFirmware()->getBoard()))
         continue;
       item = RawSource(SOURCE_TYPE_TELEMETRY, i);
-      b->addItem(item.toString(model), item.toValue());
+      b->addItem(item.toString(), item.toValue());
       if (item == source) b->setCurrentIndex(b->count()-1);
     }
   }
@@ -655,7 +655,7 @@ void populateSourceCB(QComboBox *b, const RawSource & source, const ModelData & 
   if (flags & POPULATE_GVARS) {
     for (int i=0; i<GetCurrentFirmware()->getCapability(Gvars); i++) {
       item = RawSource(SOURCE_TYPE_GVAR, i);
-      b->addItem(item.toString(model), item.toValue());
+      b->addItem(item.toString(), item.toValue());
       if (item == source) b->setCurrentIndex(b->count()-1);
     }
   }
@@ -781,8 +781,7 @@ QString getFrSkyMeasure(int units)
 
 QString getFrSkySrc(int index)
 {
-  ModelData model;
-  return RawSource(SOURCE_TYPE_TELEMETRY, index-1).toString(model);
+  return RawSource(SOURCE_TYPE_TELEMETRY, index-1).toString();
 }
 
 QString getTrimInc(ModelData * g_model)

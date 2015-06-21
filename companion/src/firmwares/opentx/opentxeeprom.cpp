@@ -521,7 +521,7 @@ class SourceField: public ConversionField< UnsignedField<N> > {
   public:
     SourceField(RawSource & source, BoardEnum board, unsigned int version, unsigned int variant, unsigned long flags=0):
       ConversionField< UnsignedField<N> >(_source, SourcesConversionTable::getInstance(board, version, variant, flags), 
-            "Source", "Source "+ source.toString(ModelData())+" cannot be exported on this board!"),
+            "Source", "Source "+ source.toString()+" cannot be exported on this board!"),
       source(source),
       _source(0)
     {

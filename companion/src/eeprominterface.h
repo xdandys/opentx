@@ -360,7 +360,7 @@ class RawSource {
       return index >= 0 ? (type * 65536 + index) : -(type * 65536 - index);
     }
 
-    QString toString(const ModelData & model) const;
+    QString toString(const ModelData * model = 0) const;
 
     RawSourceRange getRange(const ModelData & model, const GeneralSettings & settings, unsigned int flags=0) const;
 
@@ -720,10 +720,9 @@ class LogicalSwitchData { // Logical Switches data
     unsigned int duration;
     int andsw;
     void clear() { memset(this, 0, sizeof(LogicalSwitchData)); }
-    CSFunctionFamily getFunctionFamily();
-    unsigned int getRangeFlags();
-    QString funcToString();
-    QString toString(const ModelData & model, const GeneralSettings & settings);
+    CSFunctionFamily getFunctionFamily() const;
+    unsigned int getRangeFlags() const;
+    QString funcToString() const;
 };
 
 enum AssignFunc {
@@ -767,10 +766,15 @@ class FuncSwData { // Function Switches data
     unsigned int adjustMode;
     int repeatParam;
     void clear();
-    QString funcToString();
-    QString paramToString();
-    QString repeatToString();
-    QStringList toStringList();
+    QString funcToString() const;
+    QString paramToString() const;
+    QString repeatToString() const;
+    QString enabledToString() const;
+
+    static void populateResetParams(QStringList & qs);
+    static void populatePlaySoundParams(QStringList & qs);
+    static void populateHapticParams(QStringList & qs);
+
 };
 
 class FlightModeData {

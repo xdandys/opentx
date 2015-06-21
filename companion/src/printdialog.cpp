@@ -495,25 +495,23 @@ void PrintDialog::printCurves()
 
 void PrintDialog::printSwitches()
 {
-    int sc=0;
-    QString str = "<table border=1 cellspacing=0 cellpadding=3 width=\"100%\">";
-    str.append("<tr><td><h2>"+tr("Logical Switches")+"</h2></td></tr>");
-    str.append("<tr><td><table border=0 cellspacing=0 cellpadding=3>");
-
-    for (int i=0; i<firmware->getCapability(LogicalSwitches); i++) {
-      if (g_model->customSw[i].func) {
-        str.append("<tr>");
-        str.append("<td width=\"60\"><b>"+tr("L")+QString("%1</b></td>").arg(i+1));
-        QString tstr = g_model->customSw[i].toString(*g_model, *g_eeGeneral);
-        str.append(doTL(tstr,"green"));
-        str.append("</tr>");
-        sc++;
-      }
+  bool haveOutput = false;
+  QString str = "<table border=1 cellspacing=0 cellpadding=3 width=\"100%\">";
+  str += "<tr><td><h2>" + tr("Logical Switches") + "</h2></td></tr>";
+  str += "<tr><td><table border=0 cellspacing=0 cellpadding=3>";
+  for (int i=0; i<firmware->getCapability(LogicalSwitches); i++) {
+    QString sw = modelPrinter.printLogicalSwitchLine(i);
+    if (!sw.isEmpty()) {
+      str += "<tr>";
+      str += "<td width=\"60\"><b>"+ tr("L") + QString("%1</b></td>").arg(i+1);
+      str += "<td align=left>" + addFont(sw, "green") + "</td>";
+      str += "</tr>";
+      haveOutput = true;
     }
-    str.append("</table></td></tr></table>");
-    str.append("<br>");
-    if (sc!=0)
-      te->append(str);
+  }
+  str += "</table></td></tr></table>";
+  str += "<br>";
+  if (haveOutput) te->append(str);
 }
 
 void PrintDialog::printGvars()
@@ -542,44 +540,23 @@ void PrintDialog::printGvars()
 
 void PrintDialog::printFSwitches()
 {
-    int sc=0;
-    QString str = "<table border=1 cellspacing=0 cellpadding=3 width=\"100%\">";
-    str.append("<tr><td><h2>"+tr("Special Functions")+"</h2></td></tr>");
-    str.append("<tr><td><table border=0 cellspacing=0 cellpadding=3><tr>");
-    str.append("<td width=\"60\"><b>#</b></td>");
-    str.append(doTL(tr("Switch"), "", true));
-    str.append(doTL(tr("Function"), "", true));
-    str.append(doTL(tr("Parameter"), "", true));
-    str.append(doTL(tr("Repeat"), "", true));
-    str.append(doTL(tr("Enabled"), "", true));
-    str.append("</tr>");
-    for(int i=0; i<firmware->getCapability(CustomFunctions); i++) {
-      if (g_model->funcSw[i].swtch.type!=SWITCH_TYPE_NONE) {
-          str.append("<tr>");
-          str.append(doTL(tr("SF%1").arg(i+1),"", true));
-          str.append(doTL(g_model->funcSw[i].swtch.toString(),"green"));
-          str.append(doTL(g_model->funcSw[i].funcToString(),"green"));
-          str.append(doTL(g_model->funcSw[i].paramToString(),"green"));
-          int index=g_model->funcSw[i].func;
-          if ((g_model->funcSw[i].repeatParam>0) && 
-              (index==FuncPlaySound || index==FuncPlayHaptic || index==FuncPlayValue || index==FuncPlayPrompt || index==FuncPlayBoth || index==FuncBackgroundMusic)) {
-            str.append(doTL(QString("%1").arg(g_model->funcSw[i].repeatParam),"green"));
-          } else {
-            str.append(doTL( "&nbsp;","green"));
-          }
-          if ((index<=FuncInstantTrim) || (index>FuncBackgroundMusicPause)) {
-            str.append(doTL((g_model->funcSw[i].enabled ? "ON" : "OFF"),"green"));
-          } else {
-            str.append(doTL( "---","green"));
-          }
-          str.append("</tr>");
-          sc++;
-      }
+  bool haveOutput = false;
+  QString str = "<table border=1 cellspacing=0 cellpadding=3 width=\"100%\">";
+  str += "<tr><td><h2>" + tr("Special Functions") + "</h2></td></tr>";
+  str += "<tr><td><table border=0 cellspacing=0 cellpadding=3>";
+  for (int i=0; i<firmware->getCapability(CustomFunctions); i++) {
+    QString cf = modelPrinter.printCustomFunctionLine(i);
+    if (!cf.isEmpty()) {
+      str += "<tr>";
+      str += "<td width=\"60\"><b>"+ tr("SF") + QString("%1</b></td>").arg(i+1);
+      str += "<td align=left>" + addFont(cf, "green") + "</td>";
+      str += "</tr>";
+      haveOutput = true;
     }
-    str.append("</table></td></tr></table>");
-    str.append("<br>");
-    if (sc!=0)
-      te->append(str);
+  }
+  str += "</table></td></tr></table>";
+  str += "<br>";
+  if (haveOutput) te->append(str);
 }
 
 void PrintDialog::printFrSky()

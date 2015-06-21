@@ -54,7 +54,7 @@ QString  ModelPrinter::printInputName(int idx)
     }
   }
   else {
-    result = RawSource(SOURCE_TYPE_STICK, idx).toString(*g_model);
+    result = RawSource(SOURCE_TYPE_STICK, idx).toString(g_model);
   }
   return Qt::escape(result);
 }
@@ -72,9 +72,9 @@ QString ModelPrinter::printInputLine(const ExpoData * ed)
   str += "&nbsp;" + Qt::escape(QObject::tr("Weight")) + QString("(%1)").arg(getGVarString(ed->weight,true));
 
   if (firmware->getCapability(VirtualInputs)) {
-    str += " " + Qt::escape(QObject::tr("Source") + QString("(%1)").arg(ed->srcRaw.toString(*g_model)));
+    str += " " + Qt::escape(QObject::tr("Source") + QString("(%1)").arg(ed->srcRaw.toString(g_model)));
     if (ed->carryTrim>0) str += " " + Qt::escape(QObject::tr("NoTrim"));
-    else if (ed->carryTrim<0) str += " " + Qt::escape(RawSource(SOURCE_TYPE_TRIM, (-(ed->carryTrim)-1)).toString(*g_model));
+    else if (ed->carryTrim<0) str += " " + Qt::escape(RawSource(SOURCE_TYPE_TRIM, (-(ed->carryTrim)-1)).toString(g_model));
   }
   if (ed->curve.value) str += " " + Qt::escape(ed->curve.toString());
 
@@ -117,7 +117,7 @@ QString ModelPrinter::printMixerLine(const MixData * md, int highlightedSource)
   };
 
   // highlight source if needed
-  QString source = Qt::escape(md->srcRaw.toString(*g_model));
+  QString source = Qt::escape(md->srcRaw.toString(g_model));
   if ( (md->srcRaw.type == SOURCE_TYPE_CH) && (md->srcRaw.index+1 == (int)highlightedSource) ) {
     source = "<b>" + source + "</b>";
   }
@@ -133,7 +133,7 @@ QString ModelPrinter::printMixerLine(const MixData * md, int highlightedSource)
   }
 
   if (md->carryTrim>0)      str += " " + Qt::escape(QObject::tr("NoTrim"));
-  else if (md->carryTrim<0) str += " " + RawSource(SOURCE_TYPE_TRIM, (-(md->carryTrim)-1)).toString(*g_model);
+  else if (md->carryTrim<0) str += " " + RawSource(SOURCE_TYPE_TRIM, (-(md->carryTrim)-1)).toString(g_model);
 
   if (firmware->getCapability(HasNoExpo) && md->noExpo) str += " " + Qt::escape(QObject::tr("No DR/Expo"));
   if (md->sOffset)     str += " " + Qt::escape(QObject::tr("Offset")) + QString("(%1)").arg(getGVarString(md->sOffset));
@@ -180,3 +180,134 @@ QString ModelPrinter::getPhasesStr(unsigned int phases)
   return "";
 }
 
+QString ModelPrinter::printLogicalSwitchLine(int idx)
+{
+  QString result = "";
+  const LogicalSwitchData & ls = g_model->customSw[idx];
+
+  if (!ls.func)
+    return result;
+
+  if (ls.andsw!=0) {
+    result +="( ";
+  }
+  switch (ls.getFunctionFamily()) {
+    case LS_FAMILY_STAY:
+      result += QObject::tr("Edge(%1, [%2:%3])").arg(RawSwitch(ls.val1).toString()).arg(ValToTim(ls.val2)).arg(ValToTim(ls.val2+ls.val3));
+      break;
+    case LS_FAMILY_STICKY:
+      result += QObject::tr("Sticky(%1, %2)").arg(RawSwitch(ls.val1).toString()).arg(RawSwitch(ls.val2).toString());
+      break;
+    case LS_FAMILY_TIMER:
+      result += QObject::tr("Timer(%1, %2)").arg(ValToTim(ls.val1)).arg(ValToTim(ls.val2));
+      break;
+    case LS_FAMILY_VOFS: {
+      RawSource source = RawSource(ls.val1);
+      RawSourceRange range = source.getRange(*g_model, *g_eeGeneral);
+      QString res;
+      if (ls.val1)
+        res += source.toString(g_model);
+      else
+        res += "0";
+      res.remove(" ");
+      if (ls.func == LS_FN_APOS || ls.func == LS_FN_ANEG)
+        res = "|" + res + "|";
+      else if (ls.func == LS_FN_DAPOS)
+        res = "|d(" + res + ")|";
+      else if (ls.func == LS_FN_DPOS) result = "d(" + res + ")";
+      result += res;
+
+      if (ls.func == LS_FN_APOS || ls.func == LS_FN_VPOS || ls.func == LS_FN_DPOS || ls.func == LS_FN_DAPOS)
+        result += " &gt; ";
+      else if (ls.func == LS_FN_ANEG || ls.func == LS_FN_VNEG)
+        result += " &lt; ";
+      else if (ls.func == LS_FN_VALMOSTEQUAL)
+        result += " ~ ";
+      else
+        result += " missing";
+      result += QString::number(range.step * (ls.val2 /*TODO+ source.getRawOffset(model)*/) + range.offset);
+      break;
+    }
+    case LS_FAMILY_VBOOL:
+      result += RawSwitch(ls.val1).toString();
+      switch (ls.func) {
+        case LS_FN_AND:
+          result += " AND ";
+          break;
+        case LS_FN_OR:
+          result += " OR ";
+          break;
+        case LS_FN_XOR:
+          result += " XOR ";
+          break;
+       default:
+          result += " bar ";
+          break;
+      }
+      result += RawSwitch(ls.val2).toString();
+      break;
+
+    case LS_FAMILY_VCOMP:
+      if (ls.val1)
+        result += RawSource(ls.val1).toString(g_model);
+      else
+        result += "0";
+      switch (ls.func) {
+        case LS_FN_EQUAL:
+        case LS_FN_VEQUAL:
+          result += " = ";
+          break;
+        case LS_FN_NEQUAL:
+          result += " != ";
+          break;
+        case LS_FN_GREATER:
+          result += " &gt; ";
+          break;
+        case LS_FN_LESS:
+          result += " &lt; ";
+          break;
+        case LS_FN_EGREATER:
+          result += " &gt;= ";
+          break;
+        case LS_FN_ELESS:
+          result += " &lt;= ";
+          break;
+        default:
+          result += " foo ";
+          break;
+      }
+      if (ls.val2)
+        result += RawSource(ls.val2).toString(g_model);
+      else
+        result += "0";
+      break;
+  }
+
+  if (ls.andsw!=0) {
+    result +=" ) AND ";
+    result += RawSwitch(ls.andsw).toString();
+  }
+
+  if (GetCurrentFirmware()->getCapability(LogicalSwitchesExt)) {
+    if (ls.duration)
+      result += QObject::tr(" Duration (%1s)").arg(ls.duration/10.0);
+    if (ls.delay)
+      result += QObject::tr(" Delay (%1s)").arg(ls.delay/10.0);
+  }
+
+  return result;
+}
+
+QString ModelPrinter::printCustomFunctionLine(int idx)
+{
+  QString result;
+  const FuncSwData & cf = g_model->funcSw[idx];
+  if (cf.swtch.type == SWITCH_TYPE_NONE) return result;
+
+  result += cf.swtch.toString() + " - ";
+  result += cf.funcToString() + "(";
+  result += cf.paramToString() + ")";
+  if (!cf.repeatToString().isEmpty()) result += " " + cf.repeatToString();
+  if (!cf.enabledToString().isEmpty()) result += " " + cf.enabledToString();
+  return result;
+}
