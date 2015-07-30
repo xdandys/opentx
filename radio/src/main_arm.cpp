@@ -44,29 +44,24 @@ void handleUsbConnection()
 {
 #if defined(PCBTARANIS) && !defined(SIMU)
   static bool usbStarted = false;
+
   if (!usbStarted && usbPlugged()) {
+    usbStarted = true;
 #if defined(USB_MASS_STORAGE)
     opentxClose();
-#endif
-    usbStart();
-#if defined(USB_MASS_STORAGE)
     usbPluggedIn();
 #endif
-    usbStarted = true;
+  }
+  if (usbStarted && !usbPlugged()) {
+    usbStarted = false;
   }
   
 #if defined(USB_JOYSTICK)
-  if (usbStarted) {
-    if (!usbPlugged()) {
-      //disable USB
-      usbStop();
-      usbStarted = false;
-    }
-    else {
-      usbJoystickUpdate();
-    }
+  if (usbStarted ) {
+    usbJoystickUpdate();
   }
 #endif
+  
 #endif //#if defined(PCBTARANIS) && !defined(SIMU)
 }
 

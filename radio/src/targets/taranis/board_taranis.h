@@ -281,10 +281,7 @@ void backlightInit(void);
 // USB driver
 int usbPlugged(void);
 void usbInit(void);
-void usbStart(void);
-#if defined(USB_JOYSTICK)
-void usbStop(void);
-#endif
+void usbDeInit(void);
 
 #if defined(__cplusplus) && !defined(SIMU)
 }
