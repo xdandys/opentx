@@ -92,12 +92,14 @@ void menuStatisticsView(uint8_t event)
 #define MENU_DEBUG_Y_MIXMAX   (2*FH-3)
 #define MENU_DEBUG_Y_LUA      (3*FH-2)
 #define MENU_DEBUG_Y_FREE_RAM (4*FH-1)
-#define MENU_DEBUG_Y_STACK    (5*FH)
+#define MENU_DEBUG_Y_USB      (5*FH)
 #define MENU_DEBUG_Y_RTOS     (6*FH)
 
-extern uint16_t usbWraps;
-extern uint16_t charsWritten;
-extern "C" uint32_t APP_Rx_ptr_in;
+#if defined(USB_SERIAL)
+  extern uint16_t usbWraps;
+  extern uint16_t charsWritten;
+  extern "C" uint32_t APP_Rx_ptr_in;
+#endif
 
 void menuStatisticsDebug(uint8_t event)
 {
@@ -139,7 +141,6 @@ void menuStatisticsDebug(uint8_t event)
   lcd_putsLeft(MENU_DEBUG_Y_FREE_RAM, "Free Mem");
   lcd_outdezAtt(MENU_DEBUG_COL1_OFS, MENU_DEBUG_Y_FREE_RAM, getAvailableMemory(), LEFT);
   lcd_puts(lcdLastPos, MENU_DEBUG_Y_FREE_RAM, "b");
-  lcd_outdezAtt(lcdLastPos, MENU_DEBUG_Y_FREE_RAM, APP_Rx_ptr_in, LEFT);
 
 #if defined(LUA)
   lcd_putsLeft(MENU_DEBUG_Y_LUA, "Lua scripts");
@@ -152,10 +153,15 @@ void menuStatisticsDebug(uint8_t event)
   lcd_putsLeft(MENU_DEBUG_Y_MIXMAX, STR_TMIXMAXMS);
   lcd_outdezAtt(MENU_DEBUG_COL1_OFS, MENU_DEBUG_Y_MIXMAX, DURATION_MS_PREC2(maxMixerDuration), PREC2|LEFT);
   lcd_puts(lcdLastPos, MENU_DEBUG_Y_MIXMAX, "ms");
-  lcd_outdezAtt(lcdLastPos, MENU_DEBUG_Y_MIXMAX, usbWraps, LEFT);
-  lcd_puts(lcdLastPos, MENU_DEBUG_Y_MIXMAX, " ");
-  lcd_outdezAtt(lcdLastPos, MENU_DEBUG_Y_MIXMAX, charsWritten, LEFT);
 
+#if defined(USB_SERIAL)
+  lcd_putsLeft(MENU_DEBUG_Y_USB, "Usb");
+  lcd_outdezAtt(MENU_DEBUG_COL1_OFS, MENU_DEBUG_Y_USB, charsWritten, LEFT);
+  lcd_puts(lcdLastPos, MENU_DEBUG_Y_USB, " ");
+  lcd_outdezAtt(lcdLastPos, MENU_DEBUG_Y_USB, APP_Rx_ptr_in, LEFT);
+  lcd_puts(lcdLastPos, MENU_DEBUG_Y_USB, " ");
+  lcd_outdezAtt(lcdLastPos, MENU_DEBUG_Y_USB, usbWraps, LEFT);
+#endif
 
   lcd_putsLeft(MENU_DEBUG_Y_RTOS, STR_FREESTACKMINB);
   lcd_putsAtt(MENU_DEBUG_COL1_OFS, MENU_DEBUG_Y_RTOS+1, "[M]", SMLSIZE);
@@ -166,6 +172,7 @@ void menuStatisticsDebug(uint8_t event)
   lcd_outdezAtt(lcdLastPos, MENU_DEBUG_Y_RTOS, stack_free(2), UNSIGN|LEFT);
   lcd_putsAtt(lcdLastPos+2, MENU_DEBUG_Y_RTOS+1, "[I]", SMLSIZE);
   lcd_outdezAtt(lcdLastPos, MENU_DEBUG_Y_RTOS, stack_free(255), UNSIGN|LEFT);
+
 
   lcd_puts(3*FW, 7*FH+1, STR_MENUTORESET);
   lcd_status_line();
