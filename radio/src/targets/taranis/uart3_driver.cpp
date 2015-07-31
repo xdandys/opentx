@@ -109,6 +109,9 @@ void debugPutc(const char c)
 {
   if (uart3Mode == UART_MODE_DEBUG) {
     uart3Putc(c);
+#if defined(USB_SERIAL)
+    sendUsbSerialChar(c);
+#endif
   }
 }
 #endif

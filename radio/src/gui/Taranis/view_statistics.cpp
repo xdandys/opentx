@@ -95,6 +95,10 @@ void menuStatisticsView(uint8_t event)
 #define MENU_DEBUG_Y_STACK    (5*FH)
 #define MENU_DEBUG_Y_RTOS     (6*FH)
 
+extern uint16_t usbWraps;
+extern uint16_t charsWritten;
+extern "C" uint32_t APP_Rx_ptr_in;
+
 void menuStatisticsDebug(uint8_t event)
 {
   TITLE(STR_MENUDEBUG);
@@ -135,6 +139,7 @@ void menuStatisticsDebug(uint8_t event)
   lcd_putsLeft(MENU_DEBUG_Y_FREE_RAM, "Free Mem");
   lcd_outdezAtt(MENU_DEBUG_COL1_OFS, MENU_DEBUG_Y_FREE_RAM, getAvailableMemory(), LEFT);
   lcd_puts(lcdLastPos, MENU_DEBUG_Y_FREE_RAM, "b");
+  lcd_outdezAtt(lcdLastPos, MENU_DEBUG_Y_FREE_RAM, APP_Rx_ptr_in, LEFT);
 
 #if defined(LUA)
   lcd_putsLeft(MENU_DEBUG_Y_LUA, "Lua scripts");
@@ -147,6 +152,10 @@ void menuStatisticsDebug(uint8_t event)
   lcd_putsLeft(MENU_DEBUG_Y_MIXMAX, STR_TMIXMAXMS);
   lcd_outdezAtt(MENU_DEBUG_COL1_OFS, MENU_DEBUG_Y_MIXMAX, DURATION_MS_PREC2(maxMixerDuration), PREC2|LEFT);
   lcd_puts(lcdLastPos, MENU_DEBUG_Y_MIXMAX, "ms");
+  lcd_outdezAtt(lcdLastPos, MENU_DEBUG_Y_MIXMAX, usbWraps, LEFT);
+  lcd_puts(lcdLastPos, MENU_DEBUG_Y_MIXMAX, " ");
+  lcd_outdezAtt(lcdLastPos, MENU_DEBUG_Y_MIXMAX, charsWritten, LEFT);
+
 
   lcd_putsLeft(MENU_DEBUG_Y_RTOS, STR_FREESTACKMINB);
   lcd_putsAtt(MENU_DEBUG_COL1_OFS, MENU_DEBUG_Y_RTOS+1, "[M]", SMLSIZE);

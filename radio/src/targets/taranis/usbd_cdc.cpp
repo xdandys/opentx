@@ -70,6 +70,8 @@ CDC_IF_Prop_TypeDef VCP_fops =
 };
 
 }   // extern "C"
+
+bool cdcConnected = false;
 /* Private functions ---------------------------------------------------------*/
 /**
   * @brief  VCP_Init
@@ -79,6 +81,7 @@ CDC_IF_Prop_TypeDef VCP_fops =
   */
 static uint16_t VCP_Init(void)
 {
+  cdcConnected = true;
   return USBD_OK;
 }
 
@@ -90,6 +93,7 @@ static uint16_t VCP_Init(void)
   */
 static uint16_t VCP_DeInit(void)
 {
+  cdcConnected = false;
   return USBD_OK;
 }
 
@@ -179,14 +183,22 @@ static uint16_t VCP_Ctrl (uint32_t Cmd, uint8_t* Buf, uint32_t Len)
 //   return USBD_OK;
 // }
 
-
+uint16_t usbWraps = 0;
+uint16_t charsWritten = 0;
 void sendUsbSerialChar(uint8_t c)
 {
-  APP_Rx_Buffer[APP_Rx_ptr_in++] = c;
+  if (!cdcConnected) return;
+
+  APP_Rx_Buffer[APP_Rx_ptr_in] = c;
+  ++charsWritten;
   /* To avoid buffer overflow */
-  if(APP_Rx_ptr_in == APP_RX_DATA_SIZE)
+  if(APP_Rx_ptr_in >= APP_RX_DATA_SIZE-1)
   {
     APP_Rx_ptr_in = 0;
+    ++usbWraps;
+  }
+  else {
+    APP_Rx_ptr_in++;  
   }  
 }
 
