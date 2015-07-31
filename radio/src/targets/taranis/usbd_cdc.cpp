@@ -29,6 +29,9 @@
 #pragma     data_alignment = 4 
 #endif /* USB_OTG_HS_INTERNAL_DMA_ENABLED */
 
+#include "opentx.h"
+
+extern "C" {
 /* Includes ------------------------------------------------------------------*/
 #include "usbd_cdc.h"
 #include "usb_conf.h"
@@ -52,7 +55,7 @@ extern uint32_t APP_Rx_ptr_in;    /* Increment this pointer or roll it back to
 static uint16_t VCP_Init     (void);
 static uint16_t VCP_DeInit   (void);
 static uint16_t VCP_Ctrl     (uint32_t Cmd, uint8_t* Buf, uint32_t Len);
-static uint16_t VCP_DataTx   (uint8_t* Buf, uint32_t Len);
+// static uint16_t VCP_DataTx   (uint8_t* Buf, uint32_t Len);
 static uint16_t VCP_DataRx   (uint8_t* Buf, uint32_t Len);
 
 // static uint16_t VCP_COMConfig(uint8_t Conf);
@@ -62,10 +65,11 @@ CDC_IF_Prop_TypeDef VCP_fops =
   VCP_Init,
   VCP_DeInit,
   VCP_Ctrl,
-  VCP_DataTx,
+  0,
   VCP_DataRx
 };
 
+}   // extern "C"
 /* Private functions ---------------------------------------------------------*/
 /**
   * @brief  VCP_Init
@@ -153,54 +157,66 @@ static uint16_t VCP_Ctrl (uint32_t Cmd, uint8_t* Buf, uint32_t Len)
   * @param  Len: Number of data to be sent (in bytes)
   * @retval Result of the opeartion: USBD_OK if all operations are OK else VCP_FAIL
   */
-static uint16_t VCP_DataTx (uint8_t* Buf, uint32_t Len)
+// static uint16_t VCP_DataTx (uint8_t* Buf, uint32_t Len)
+// {
+//   // if (linecoding.datatype == 7)
+//   // {
+//   //   APP_Rx_Buffer[APP_Rx_ptr_in] = USART_ReceiveData(EVAL_COM1) & 0x7F;
+//   // }
+//   // else if (linecoding.datatype == 8)
+//   // {
+//   //   APP_Rx_Buffer[APP_Rx_ptr_in] = USART_ReceiveData(EVAL_COM1);
+//   // }
+  
+//   // APP_Rx_ptr_in++;
+  
+//   // /* To avoid buffer overflow */
+//   // if(APP_Rx_ptr_in == APP_RX_DATA_SIZE)
+//   // {
+//   //   APP_Rx_ptr_in = 0;
+//   // }  
+  
+//   return USBD_OK;
+// }
+
+
+void sendUsbSerialChar(uint8_t c)
 {
-  // if (linecoding.datatype == 7)
-  // {
-  //   APP_Rx_Buffer[APP_Rx_ptr_in] = USART_ReceiveData(EVAL_COM1) & 0x7F;
-  // }
-  // else if (linecoding.datatype == 8)
-  // {
-  //   APP_Rx_Buffer[APP_Rx_ptr_in] = USART_ReceiveData(EVAL_COM1);
-  // }
-  
-  // APP_Rx_ptr_in++;
-  
-  // /* To avoid buffer overflow */
-  // if(APP_Rx_ptr_in == APP_RX_DATA_SIZE)
-  // {
-  //   APP_Rx_ptr_in = 0;
-  // }  
-  
-  return USBD_OK;
+  APP_Rx_Buffer[APP_Rx_ptr_in++] = c;
+  /* To avoid buffer overflow */
+  if(APP_Rx_ptr_in == APP_RX_DATA_SIZE)
+  {
+    APP_Rx_ptr_in = 0;
+  }  
 }
 
 /**
   * @brief  VCP_DataRx
-  *         Data received over USB OUT endpoint are sent over CDC interface 
-  *         through this function.
+  *         Data received over USB OUT endpoint is available here
   *           
   *         @note
   *         This function will block any OUT packet reception on USB endpoint 
   *         untill exiting this function. If you exit this function before transfer
   *         is complete on CDC interface (ie. using DMA controller) it will result 
   *         in receiving more data while previous ones are still not sent.
-  *                 
+  *          
+            @note
+            This function is executed inside the USBD_OTG_ISR_Handler() interrupt handler!
+
   * @param  Buf: Buffer of data to be received
   * @param  Len: Number of data received (in bytes)
   * @retval Result of the opeartion: USBD_OK if all operations are OK else VCP_FAIL
   */
 static uint16_t VCP_DataRx (uint8_t* Buf, uint32_t Len)
 {
-  uint32_t i;
-  
-  for (i = 0; i < Len; i++)
+  //copy data to application FIFO
+  for (uint32_t i = 0; i < Len; i++)
   {
     //echo back data
-    APP_Rx_Buffer[APP_Rx_ptr_in++] = Buf[i];
-    APP_Rx_Buffer[APP_Rx_ptr_in++] = '-';
+    // APP_Rx_Buffer[APP_Rx_ptr_in++] = Buf[i];
+    // APP_Rx_Buffer[APP_Rx_ptr_in++] = '-';
+    cliRxFifo.push(Buf[i]);
   } 
- 
   return USBD_OK;
 }
 

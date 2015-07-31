@@ -973,7 +973,7 @@ ifeq ($(PCB), TARANIS)
   else ifeq ($(USB), SERIAL)
     CPPDEFS += -DUSB_SERIAL
     SRC += $(STM32USBPATH)/STM32_USB_Device_Library/Class/cdc/src/usbd_cdc_core.c
-    SRC += targets/taranis/usbd_cdc.c
+    EXTRABOARDSRC += targets/taranis/usbd_cdc.cpp
   else
     CPPDEFS += -DUSB_MASS_STORAGE
     SRC += $(STM32USBPATH)/STM32_USB_Device_Library/Class/msc/src/usbd_msc_data.c

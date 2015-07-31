@@ -1755,4 +1755,9 @@ extern Clipboard clipboard;
 extern uint16_t s_anaFilt[NUMBER_ANALOG];
 #endif
 
+#if defined(USB_SERIAL)
+extern Fifo<64> cliRxFifo;
+#endif
+
+
 #endif

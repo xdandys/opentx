@@ -66,7 +66,7 @@ USB_OTG_CORE_HANDLE USB_OTG_dev;
 
 void OTG_FS_IRQHandler(void)
 {
-  USBD_OTG_ISR_Handler (&USB_OTG_dev);
+  USBD_OTG_ISR_Handler(&USB_OTG_dev);
 }
 
 void usbInit(void)
