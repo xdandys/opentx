@@ -17,7 +17,8 @@ void TelemetryItem::gpsReceived()
 void TelemetryItem::setValue(const TelemetrySensor & sensor, int32_t val, uint32_t unit, uint32_t prec)
 {
   int32_t newVal = val;
-
+  value = newVal;
+  
   if (unit == UNIT_CELLS) {
     uint32_t data = uint32_t(newVal);
     uint8_t cellsCount = (data >> 24);
